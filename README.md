@@ -1,23 +1,39 @@
-library(data.table)
+---
+title: "README.md"
+author: "Jen Sern LEW"
+date: "Monday, May 25, 2015"
+output: html_document
+---
 
+###README for r_analysis.R
 
-####Proposed Tidy Data Set Structure
-## Join columns according to the following sequence
-## 1. SubjectID from <subj_list>
-## 2. ActivityCode from <activity_code>
-## 3. ActivityName from <activity_list> (using match function to generate list)
-## 4. Features Data from <x> & Features Column Names from <feature_list>
-## 5. Inertial Datas <inertial_tot_acc, inertial_bod_acc, inertial_gyro_rad> 
-##      for the 1 window data set of 128 observations in time each.
-##      by column names 
-##      - tot.acc.1:tot.acc.128
-##      - body.acc.1:body.acc.128
-##      - gyro.rad.1:gyro.rad.128
-## Total no of columns : 1 + 1 + 1 + 561 + 9*128 = 948
-#####
+Standalone script for generating
 
+* a full tidy data set containing all measurement values for test & train including raw inertial signals
+* a smaller data set by subsetting according to "mean" and "std"
+* a computed data set by obtaining averages across all activities and then by person
 
+Tidy Data Set Column Structure
 
+* SubjectID
+* ActivityCode
+* ActivityName
+* Features
+* Inertial Datas
+
+        + inertial_tot_acc_x
+        + inertial_tot_acc_y
+        + inertial_tot_acc_z
+        + inertial_bod_acc_x
+        + inertial_bod_acc_y
+        + inertial_bod_acc_z
+        + inertial_gyro_rad_x        
+        + inertial_gyro_rad_y
+        + inertial_gyro_rad_z
+     
+        
+The following code generates tidy data according to the above structure for the **test** dataset.
+```{r}
 #####Work with TEST data
 x_test<-read.table("test/x_test.txt")
 
@@ -68,6 +84,10 @@ tidydata_test<-cbind(subj_list,
 
 ######
 
+```
+
+The following code generates tidy data according to the above structure for the **train** dataset.
+```{r}
 #####Work with TRAIN data
 x_test<-read.table("train/x_train.txt")
 
@@ -118,9 +138,16 @@ tidydata_train<-cbind(subj_list,
 
 ####
 
+```
+
+Join both **test** and **train** datasets
+```{r}
 ##Join tidy data for test and train dataset
 tidydata_full<-rbind(tidydata_test,tidydata_train)
+```
 
+Generate column names for all inertial signals, create master column name list and apply to tidy data set.
+```{r}
 ####Generate column name list for tidy data
 ##column names for features
 feature_names<-as.character(feature_list[[2]])
@@ -141,7 +168,10 @@ col_names<-c("SubjectID","ActivityCode","ActivityName",feature_names,inertial_na
 
 ##apply column names to tidy data
 names(tidydata_full)<-col_names
+```
 
+To extract features containing **mean** and **std** by word matching. Use **grep** to find matching row IDs. Next, obtain union of selected column names.
+```{r}
 ####Search for features containing "mean" and "std"
 mean_grep_list<-grep("mean",col_names)
 mean_grep_name<-col_names[mean_grep_list]
@@ -158,12 +188,23 @@ subject_grep_name<-col_names[subject_grep_list]
 ##Take union of lists to obtain combined column selection
 selected_features_list<-sort(Reduce(union,list(mean_grep_list,std_grep_list,activity_grep_list,subject_grep_list)),decreasing=FALSE)
 
+```
+
+Subset out data based on selected columns
+```{r}
 ##Extract relevant columns from tidy dataset
 tidydata_select<-tidydata_full[,selected_features_list]
+```
 
+Split data by activity name
+```{r}
 ##Generate new tidy data set looking at average measurement split by activity, for each person
 tidy_activity<-split(tidydata_select,tidydata_select$ActivityName)
 
+```
+
+Define function **ActivityMeanExtractor()** which takes an input argument (1-6) based on the names of the split data frame, computes the mean for each activity by subjectID (1-30), converts the means of each subjectID into a vector and regenerate data frame using **rbind**, add relevant column names for subjectID and matching activity name based on input argument, returns the resulting data frame for that activity code.
+```{r}
 ActivityMeanExtractor<-function(i){
         ##Apply variable means by subject for each activity
         tidy_activity_person<-by(tidy_activity[[i]][,4:length(selected_features_list)],tidy_activity[[i]]$SubjectID,FUN=colMeans)
@@ -189,11 +230,19 @@ ActivityMeanExtractor<-function(i){
         return(tidy_activity_person_df2)
        
 }
+```
 
+Create full data frame for all activities by taking a **rbind** loop of **ActivityMeanExtractor()** and assign appropriate variable names(variable names were removed in the function call).
+```{r}
 ##<rbind> activity selection across all activities into a single large data frame
 tidydata_avg_mean_std<-do.call(rbind,lapply(1:length(activity_label[[2]]),function(x){ActivityMeanExtractor(x)}))
 ##assign respective variable names to each columns
 names(tidydata_avg_mean_std)<-c("ActivityName","SubjectID",names(tidydata_select)[4:length(selected_features_list)])
 
+```
+
+Finally, export the data.
+```{r}
 ##export data
 write.table(tidydata_avg_mean_std,"tidydata_avg_mean_std.txt",row.names=FALSE)
+```

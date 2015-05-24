@@ -164,9 +164,6 @@ tidydata_select<-tidydata_full[,selected_features_list]
 ##Generate new tidy data set looking at average measurement split by activity, for each person
 tidy_activity<-split(tidydata_select,tidydata_select$ActivityName)
 
-##Generate subjectID names to data frame (1:30)
-name_list<-as.numeric(seq(1:length(tidy_activity_person)))
-
 ActivityMeanExtractor<-function(i){
         ##Apply variable means by subject for each activity
         tidy_activity_person<-by(tidy_activity[[i]][,4:length(selected_features_list)],tidy_activity[[i]]$SubjectID,FUN=colMeans)

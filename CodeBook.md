@@ -40,7 +40,7 @@ inertial_gyro_rad_z             inertial signal data for gyroscope angular veloc
 tidydata_test                   tidy data frame combining the following columns (activity_code, activity_list, x_test, inertial_tot_acc_x, inertial_tot_acc_y, inertial_tot_acc_z, inertial_bod_acc_x, inertial_bod_acc_y, inertial_bod_acc_z, inertial_gyro_rad_x, inertial_gyro_rad_y, inertial_gyro_rad_z)
 tidydata_train                  tidy data frame combining the following columns (activity_code, activity_list, x_train, inertial_tot_acc_x, inertial_tot_acc_y, inertial_tot_acc_z, inertial_bod_acc_x, inertial_bod_acc_y, inertial_bod_acc_z, inertial_gyro_rad_x, inertial_gyro_rad_y, inertial_gyro_rad_z)
 feature_names                   list containing names of the features measured
-inertial_names                  list containing names for the inertial signals according to the convention tot.acc.x.1, body.acc.x.1, gyro.rad.x.1 for x/y/z and for observations in time from 1-128 data points per window
+inertial_names                  list containing names for the inertial signals according to the convention tot.acc.x.1, body.acc.x.1, gyro.rad.x.1 for x/y/z and for observations in time from 1-128 data points per window. Total acceleration and body acceleration is in units of gravity "g", gyroscope angular velocity in radians/second
 col_names                       list containing all column names to be applied to full data frame
 tidydata_full                   data frame containing complete data value for test and train datasets including inertial signals
 mean_grep_list                  list of rows for column names containing "mean"
